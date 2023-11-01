@@ -67,6 +67,6 @@ def main():
             ws = find_window(tree["nodes"][output]["nodes"][1]["nodes"], title)
             output += 1
         if ws is not None:
-            sp.run(f"i3-msg 'workspace {ws}'", shell=True)
+            sp.run(f"i3-msg 'workspace {ws}' &> /dev/null", shell=True)
         else:
             sp.run(command, shell=True)
