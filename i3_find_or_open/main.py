@@ -76,8 +76,6 @@ def main():
     args = parser.parse_args()
 
     tree = json.loads(sp.run(["i3-msg", "-t", "get_tree"], capture_output=True).stdout)
-    print(tree["nodes"][0]["nodes"][0]["nodes"][0]["floating_nodes"])
-    print(args._class)
     if len(
         list(
             filter(
