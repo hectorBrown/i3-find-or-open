@@ -73,11 +73,10 @@ def main():
     args = parser.parse_args()
 
     i3 = i3ipc.Connection()
-    tree = i3.get_tree()
 
     ws = find_window(
         args.title,
-        tree,
+        i3.get_tree(),
         match_class=args._class,
     )
     if ws is None:

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "i3_find_or_open"
-version = "0.4.0"
+version = "0.4.1"
 license = "GPL-3.0-only"
 description = "A command-line utility that helps you bind keys to find and display a window, or open it if there is no instance running in i3wm."
 authors = ["Hector Brown <hectorjbrown@protonmail.com>"]
