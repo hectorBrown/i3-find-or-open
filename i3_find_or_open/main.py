@@ -1,51 +1,48 @@
 """A module that helps you bind keys to find and display, or open a window in i3wm."""
 #!/bin/python
 import argparse
-import json
 import re
 import subprocess as sp
 
-import flatdict
+import i3ipc
 
 
-def find_window(tree: dict, title: str, match_class=False) -> int | None:
+def find_window(title: str, tree: i3ipc.con.Con, match_class=False) -> str | None:
     """Finds a window by title regex in an i3 tree.
 
     Args:
-        tree (dict): A tree as found by `i3-msg -t get_tree`.
         title (str): A regex that describes the title of the window you are trying to
             find.
+        tree (i3ipc.con.Con): A tree as returned by i3ipc.Connection().get_tree().
 
     Kwargs:
         match_class (bool): Find by class regex instead. Defaults to False.
 
     Returns:
-        window (int): The workspace the window has been found on. None if it doesn't
-            exist.
-
+        window (str): The workspace the window has been found on, or 'scratchpad' if the
+            window is hidden. None if it doesn't exist.
     """
-    pass
-    for workspace in tree:
-        ws = flatdict.FlatterDict(workspace)
-        print(ws)
-        if len(
-            list(
-                filter(  # type: ignore
-                    re.compile(title).match,  # type: ignore
-                    [
-                        ws[x]
-                        for x in filter(
-                            re.compile(
-                                f".*{'class' if match_class else 'title'}$"
-                            ).match,
-                            ws.keys(),
-                        )
-                        if ws[x] is not None
-                    ],
-                )
+    if len(
+        [
+            leaf.window_class if match_class else leaf.window_title
+            for leaf in tree.scratchpad().leaves()
+            if re.compile(title).match(
+                leaf.window_class if match_class else leaf.window_title  # type: ignore
             )
+        ]
+    ):
+        return "scratchpad"
+    for workspace in tree.workspaces():
+        if len(
+            [
+                leaf.window_class if match_class else leaf.window_title
+                for leaf in workspace.leaves()
+                if re.compile(title).match(
+                    leaf.window_class if match_class else leaf.window_title  # type: ignore
+                )
+            ],
         ):
-            return ws["name"]  # type: ignore
+            return workspace.name  # pyright: ignore
     return None
 
 
@@ -75,36 +72,19 @@ def main():
     )
     args = parser.parse_args()
 
-    tree = json.loads(sp.run(["i3-msg", "-t", "get_tree"], capture_output=True).stdout)
-    if len(
-        list(
-            filter(
-                re.compile(args.title).match,
-                [
-                    x["nodes"][0]["window_properties"][
-                        "class" if args._class else "title"
-                    ]
-                    for x in tree["nodes"][0]["nodes"][0]["nodes"][0]["floating_nodes"]
-                ],
-            )
-        )
-    ):
-        sp.run(
-            f"i3-msg '[{'class' if args._class else 'title'}=\"{args.title}\"] "
-            + "scratchpad show'",
-            shell=True,
+    i3 = i3ipc.Connection()
+    tree = i3.get_tree()
+
+    ws = find_window(
+        args.title,
+        tree,
+        match_class=args._class,
+    )
+    if ws is None:
+        sp.run(args.command, shell=True)
+    elif ws == "scratchpad":
+        i3.command(
+            f"[{'class' if args._class else 'title'}=\"{args.title}\"] scratchpad show"
         )
     else:
-        output = 1
-        ws = None
-        while ws is None and output < len(tree["nodes"]):
-            ws = find_window(
-                tree["nodes"][output]["nodes"][1]["nodes"],
-                args.title,
-                match_class=args._class,
-            )
-            output += 1
-        if ws is not None:
-            sp.run(f"i3-msg 'workspace {ws}' &> /dev/null", shell=True)
-        else:
-            sp.run(args.command, shell=True)
+        i3.command(f"workspace {ws}")
