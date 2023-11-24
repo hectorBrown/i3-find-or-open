@@ -1,6 +1,7 @@
 """A module that helps you bind keys to find and display, or open a window in i3wm."""
 #!/bin/python
 import argparse
+import importlib.metadata
 import re
 import subprocess as sp
 
@@ -46,19 +47,25 @@ def main():
     parser.add_argument(
         "title",
         type=str,
-        help="A regex that will match the window title that you are trying to find.",
+        help="a regex that will match the window title that you are trying to find.",
     )
     parser.add_argument(
         "command",
         type=str,
-        help="The command that will be run if the window is not open.",
+        help="the command that will be run if the window is not open.",
     )
     parser.add_argument(
         "-c",
         "--match-class",
         action="store_true",
         dest="_class",
-        help="Match a window's class instead of its title.",
+        help="match a window's class instead of its title.",
+    )
+    parser.add_argument(
+        "-v",
+        "--version",
+        action="version",
+        version=importlib.metadata.version("i3_find_or_open"),
     )
     args = parser.parse_args()
 
