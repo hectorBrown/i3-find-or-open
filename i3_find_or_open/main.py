@@ -22,27 +22,17 @@ def find_window(title: str, tree: i3ipc.con.Con, match_class=False) -> str | Non
         window (str): The workspace the window has been found on, or 'scratchpad' if the
             window is hidden. None if it doesn't exist.
     """
-    if len(
-        [
-            leaf.window_class if match_class else leaf.window_title
-            for leaf in tree.scratchpad().leaves()
+    for leaf in tree.scratchpad().leaves():
+        if re.compile(title).match(
+            leaf.window_class if match_class else leaf.window_title  # type: ignore
+        ):
+            return "scratchpad"
+    for workspace in tree.workspaces():
+        for leaf in workspace.leaves():
             if re.compile(title).match(
                 leaf.window_class if match_class else leaf.window_title  # type: ignore
-            )
-        ]
-    ):
-        return "scratchpad"
-    for workspace in tree.workspaces():
-        if len(
-            [
-                leaf.window_class if match_class else leaf.window_title
-                for leaf in workspace.leaves()
-                if re.compile(title).match(
-                    leaf.window_class if match_class else leaf.window_title  # type: ignore
-                )
-            ],
-        ):
-            return workspace.name  # pyright: ignore
+            ):
+                return workspace.name  # type: ignore
     return None
 
 
