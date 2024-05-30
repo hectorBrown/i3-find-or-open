@@ -27,12 +27,14 @@ def find_window(title: str, tree: i3ipc.con.Con, match_class=False) -> str | Non
         if re.compile(title).match(
             leaf.window_class if match_class else leaf.window_title  # type: ignore
         ):
-            return "scratchpad"
+            return "scratchpad closed"
     for workspace in tree.workspaces():
         for leaf in workspace.leaves():
             if re.compile(title).match(
                 leaf.window_class if match_class else leaf.window_title  # type: ignore
             ):
+                if leaf.floating == "user_on" and leaf.focused:  # type: ignore
+                    return "scratchpad open"
                 return workspace.name  # type: ignore
     return None
 
@@ -62,6 +64,12 @@ def main():
         help="match a window's class instead of its title.",
     )
     parser.add_argument(
+        "-t",
+        "--toggle",
+        action="store_true",
+        help="toggle the window if it is in the scratchpad.",
+    )
+    parser.add_argument(
         "-v",
         "--version",
         action="version",
@@ -78,9 +86,12 @@ def main():
     )
     if ws is None:
         sp.run(args.command, shell=True)
-    elif ws == "scratchpad":
-        i3.command(
-            f"[{'class' if args._class else 'title'}=\"{args.title}\"] scratchpad show"
-        )
+    elif ws[: len("scratchpad")] == "scratchpad":
+        if (args.toggle and ws == "scratchpad open") or ws == "scratchpad closed":
+            print("here")
+            i3.command(
+                f"[{'class' if args._class else 'title'}=\"{args.title}\"] "
+                + "scratchpad show"
+            )
     else:
         i3.command(f"workspace {ws}")
