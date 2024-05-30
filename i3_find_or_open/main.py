@@ -1,3 +1,4 @@
+#!/bin/python
 """A module that helps you bind keys to find and display, or open a window in i3wm."""
 
 import argparse
@@ -95,3 +96,7 @@ def main():
             )
     else:
         i3.command(f"workspace {ws}")
+
+
+if __name__ == "__main__":
+    main()
