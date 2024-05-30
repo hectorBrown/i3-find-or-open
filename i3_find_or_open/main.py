@@ -1,5 +1,5 @@
 """A module that helps you bind keys to find and display, or open a window in i3wm."""
-#!/bin/python
+
 import argparse
 import importlib.metadata
 import re
