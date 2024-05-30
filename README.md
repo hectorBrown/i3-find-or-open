@@ -64,4 +64,9 @@ title completely changes (like for the Spotify app).
 bindsym $mod+s exec --no-startup-id "i3-find-or-open -c 'Spotify' 'spotify-launcher'"
 ```
 
+You can use the `-t` flag to toggle scratchpad windows (i.e. to mimic the
+effect of the `scratchpad show` command, but just for your targeted window).
+Keeping this off (as is the default) will make sure the behaviour is such that
+your keybinding will always show you the targeted window, no matter what.
+
 Title and class information about any open window can be found with the `xprop` command.
