@@ -89,7 +89,6 @@ def main():
         sp.run(args.command, shell=True)
     elif ws[: len("scratchpad")] == "scratchpad":
         if (args.toggle and ws == "scratchpad open") or ws == "scratchpad closed":
-            print("here")
             i3.command(
                 f"[{'class' if args._class else 'title'}=\"{args.title}\"] "
                 + "scratchpad show"
